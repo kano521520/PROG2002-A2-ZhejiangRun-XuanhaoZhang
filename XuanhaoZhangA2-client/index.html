@@ -3,94 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Charity Events Portal</title>
+    <title>Zhejiang Community Charity Events</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="navbar">
-        <h1>🏃‍♂️ Community Charity Events</h1>
+    <!-- Top Brand Header & Hero Banner -->
+    <header class="hero-banner">
+        <div class="hero-content">
+            <span class="hero-tag">🏃 Zhejiang Hope Run 2026</span>
+            <h1>Zhejiang Community Charity Events</h1>
+            <p>Run together for hope, health, and a better community across Zhejiang Province.</p>
+        </div>
     </header>
 
     <main class="container">
-        <!-- Event Creation Form Section -->
-        <section class="admin-panel-section" style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h2>➕ Add New Charity Event</h2>
-            <form id="event-form" onsubmit="handleCreateEvent(event)">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label for="event-title">Event Title:</label>
-                    <input type="text" id="event-title" required class="form-control" placeholder="e.g., Annual City Marathon">
+        <!-- Search and Filter Section -->
+        <section class="filter-section">
+            <div class="filter-card">
+                <div class="filter-group">
+                    <label for="search-location">🔍 Search Location</label>
+                    <input type="text" id="search-location" placeholder="e.g., Hangzhou, Ningbo, West Lake..." />
                 </div>
 
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label for="event-category">Category:</label>
-                    <select id="event-category" required class="form-control"></select>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label for="event-location">Location:</label>
-                    <input type="text" id="event-location" required class="form-control" placeholder="e.g., West Lake Park">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label for="event-date">Event Date:</label>
-                    <input type="date" id="event-date" required class="form-control">
-                </div>
-
-                <!-- Banner Image Selection Dropdown -->
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label for="event-image-select">Banner Image Selection:</label>
-                    <select id="event-image-select" onchange="toggleCustomUrlInput(this)" class="form-control">
-                        <option value="https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=800&q=80">
-                            🏙️ City Marathon & General Race
-                        </option>
-                        <option value="https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=800&q=80">
-                            👨‍👩‍👧 Family & Kids Fun Run
-                        </option>
-                        <option value="https://images.unsplash.com/photo-1517649763962-0c623266010b?auto=format&fit=crop&w=800&q=80">
-                            🌙 Night & Neon Glow Run
-                        </option>
-                        <option value="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=800&q=80">
-                            🌲 Trail & Park Nature Run
-                        </option>
-                        <option value="https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=800&q=80">
-                            ⚡ 10K & Pro Athletics Challenge
-                        </option>
-                        <option value="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80">
-                            🤝 Community Charity Walk
-                        </option>
-                        <option value="custom">🌐 Custom External Image URL...</option>
+                <div class="filter-group">
+                    <label for="category-select">🏷️ Event Category</label>
+                    <select id="category-select">
+                        <option value="">All Categories</option>
                     </select>
-
-                    <input 
-                        type="url" 
-                        id="custom-image-url" 
-                        class="form-control" 
-                        placeholder="Enter image HTTP/HTTPS URL..." 
-                        style="display: none; margin-top: 10px;"
-                    />
                 </div>
 
-                <button type="submit" class="btn-submit" style="padding: 10px 20px; cursor: pointer;">Submit Event Entity</button>
-            </form>
-        </section>
-
-        <hr style="margin: 30px 0;">
-
-        <!-- Search and Filter Control Panel -->
-        <section class="filter-panel">
-            <div id="category-buttons" class="category-group"></div>
-            
-            <div class="search-group" style="margin-top: 15px;">
-                <input type="text" id="search-location" placeholder="Search by location..." class="form-control">
-                <input type="date" id="search-date" class="form-control">
-                <button onclick="handleSearch()" class="btn-primary">Search</button>
-                <button onclick="clearSearch()" class="btn-secondary">Clear</button>
+                <button id="btn-reset" class="btn-secondary">Reset Filters</button>
             </div>
         </section>
 
-        <!-- Dynamic Event Display Grid -->
-        <section id="event-list" class="event-grid" style="margin-top: 20px;"></section>
+        <!-- Events Grid Section -->
+        <section class="events-section">
+            <div class="section-header">
+                <h2>Upcoming Charity Runs</h2>
+                <span id="event-count-badge" class="count-badge">Loading...</span>
+            </div>
+            <div id="events-grid" class="events-grid">
+                <!-- Dynamically populated by main.js -->
+            </div>
+        </section>
     </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Zhejiang Community Charity Events Platform | PROG2002 Assessment 2</p>
+    </footer>
 
     <script src="main.js"></script>
 </body>
