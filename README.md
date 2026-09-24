@@ -8,33 +8,33 @@
 ---
 
 ## Project Overview
-This full-stack web application allows users to explore and view details of community charity running events across various cities in Zhejiang Province (e.g., Hangzhou, Ningbo, Shaoxing, Huzhou, Jiaxing, Wenzhou). 
+This full-stack web application enables users to explore and register for community charity running events across various cities in Zhejiang Province (e.g., Hangzhou, Ningbo, Shaoxing, Huzhou, Jiaxing, Wenzhou). 
 
-The platform features a responsive frontend client and a RESTful API backend connected to a relational SQLite database.
-
----
-
-## Tech Stack
-- **Backend:** Node.js, Express.js, SQLite3
-- **Frontend:** HTML5, CSS3, Modern JavaScript (ES6 Fetch API)
-- **Database:** SQLite (`charity_events.db`)
+The platform is built with a responsive vanilla HTML/CSS/JS frontend and a RESTful Express.js API backend connected to a local SQLite database (`charity_events.db`).
 
 ---
 
-## Repository Structure
+## Exact Directory Structure
 
 ```text
-PROG2002-A2/
-├── XuanhaoZhangA2-api/       # Backend REST API Server
-│   ├── db/                   # Database storage directory
-│   ├── server.js             # Express application & API routes
-│   ├── setup-db.js            # Database schema setup & seeding script
-│   └── package.json          # Node.js package dependencies
-├── XuanhaoZhangA2-client/    # Frontend Web Application
-│   ├── index.html            # Main event discovery page
-│   ├── details.html          # Individual event details page
-│   ├── main.js               # Event listing & filtering logic
-│   ├── details.js            # Single event fetch & render logic
-│   └── style.css             # UI styling and layout rules
-├── .gitignore                # Git exclusion rules
-└── README.md                 # Project documentation
+PROG2002-A2-ZhejiangRun/
+├── db/                         # SQLite Database & SQL Schema Storage
+│   ├── charity_events.db       # Active SQLite database file
+│   └── charityevents_db.sql    # Raw SQL table schema & dump file
+├── XuanhaoZhangA2-api/         # Express.js REST API Backend
+│   ├── event_db.js             # Event database helper module
+│   ├── package.json            # Node.js dependencies & scripts
+│   ├── package-lock.json       # Dependency tree lockfile
+│   ├── server.js               # Express server & API routes
+│   ├── setup-db.js              # Database initialization & seeding script
+│   ├── update-db.js             # Database patch & image update script
+│   └── .gitignore              # Backend Git exclusion rules
+├── XuanhaoZhangA2-client/      # Frontend Web Client
+│   ├── details.html            # Event detail view & registration page
+│   ├── details.js              # Fetch event details & submit registration
+│   ├── index.html              # Main event discovery & search page
+│   ├── main.js                 # Dynamic event grid & filter logic
+│   ├── style.css               # Visual layout & card styling rules
+│   └── .gitignore              # Frontend Git exclusion rules
+├── .gitattributes              # Git repository attributes config
+└── README.md                   # Complete project documentation
