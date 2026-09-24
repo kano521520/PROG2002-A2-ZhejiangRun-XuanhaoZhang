@@ -1,121 +1,120 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, '../db/charity_events.db');
+const dbDir = path.resolve(__dirname, '../db');
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
 
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Database connection error:', err.message);
-        process.exit(1);
-    }
-    console.log(`Connected to database at: ${dbPath}`);
-});
+const dbPath = path.join(dbDir, 'charity_events.db');
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
-    // 1. Create categories table
+    db.run('DROP TABLE IF EXISTS events');
+    db.run('DROP TABLE IF EXISTS categories');
+
+    // Create categories
     db.run(`
-        CREATE TABLE IF NOT EXISTS categories (
+        CREATE TABLE categories (
             category_id INTEGER PRIMARY KEY AUTOINCREMENT,
             category_name TEXT NOT NULL
         )
     `);
 
-    // 2. Create events table
+    // Create events
     db.run(`
-        CREATE TABLE IF NOT EXISTS events (
+        CREATE TABLE events (
             event_id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
-            category_id INTEGER NOT NULL,
+            category_id INTEGER,
             location TEXT NOT NULL,
             date TEXT NOT NULL,
+            description TEXT,
             image_url TEXT,
+            organizer TEXT,
             FOREIGN KEY (category_id) REFERENCES categories(category_id)
         )
     `);
 
-    // 3. Create registrations table for event bookings
-    db.run(`
-        CREATE TABLE IF NOT EXISTS registrations (
-            registration_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_id INTEGER NOT NULL,
-            full_name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT,
-            quantity INTEGER NOT NULL DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (event_id) REFERENCES events(event_id)
-        )
+    // Categories
+    const stmtCategory = db.prepare('INSERT INTO categories (category_name) VALUES (?)');
+    stmtCategory.run('Family Fun Run');
+    stmtCategory.run('Community 10K');
+    stmtCategory.run('Half Marathon');
+    stmtCategory.run('Trail & Nature Run');
+    stmtCategory.run('City Health Walk');
+    stmtCategory.finalize();
+
+    // Insert full event listings (Using Asian/Chinese runner imagery)
+    const stmtEvent = db.prepare(`
+        INSERT INTO events (title, category_id, location, date, description, image_url, organizer)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    // Reset tables for clean initialization
-    db.run('DELETE FROM categories');
-    db.run('DELETE FROM events');
+    stmtEvent.run(
+        'West Lake 5K Family Charity Run',
+        1,
+        'Hangzhou, West Lake Scenic Area',
+        '2026-10-15',
+        'A scenic 5K charity run along West Lake in Hangzhou, encouraging families and young runners to raise support for local community education.',
+        'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=800&q=80',
+        'Hangzhou Sports & Health Foundation'
+    );
 
-    // Seed categories
-    const insertCategory = db.prepare('INSERT INTO categories (category_id, category_name) VALUES (?, ?)');
-    insertCategory.run(1, 'Family & Kids Run');
-    insertCategory.run(2, '10K & Challenge Run');
-    insertCategory.run(3, 'Night & Glow Run');
-    insertCategory.run(4, 'Trail & Park Run');
-    insertCategory.finalize();
+    stmtEvent.run(
+        'Ningbo Harbour Community 10K Challenge',
+        2,
+        'Ningbo, Beilun Port Park',
+        '2026-10-22',
+        'An energetic 10K coastal run promoting healthy urban living and supporting maritime community welfare programs across Ningbo.',
+        'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=80',
+        'Ningbo Athletic Association'
+    );
 
-    // Seed initial events with verified high-res Asian runner photos
-    const insertEvent = db.prepare(`
-        INSERT INTO events (title, category_id, location, date, image_url)
-        VALUES (?, ?, ?, ?, ?)
-    `);
+    stmtEvent.run(
+        'Shaoxing Ancient Towpath Half Marathon',
+        3,
+        'Shaoxing, Yuecheng District',
+        '2026-11-05',
+        'Run along historical canal stone paths in Shaoxing. Registration proceeds support ancient water town cultural heritage conservation.',
+        'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=800&q=80',
+        'Shaoxing Heritage Charity Fund'
+    );
 
-    const initialEvents = [
-        [
-            'West Lake 5K Family Fun Run',
-            1,
-            'Hangzhou (West Lake)',
-            '2026-10-14',
-            'https://images.unsplash.com/photo-1594882645126-14020914d58d?auto=format&fit=crop&w=800&q=80'
-        ],
-        [
-            'Dongqian Lake Sunset 10K Run',
-            2,
-            'Ningbo (Dongqian Lake)',
-            '2026-10-27',
-            'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80'
-        ],
-        [
-            'Shaoxing Ancient Town Night Glow Run',
-            3,
-            'Shaoxing (Yuecheng)',
-            '2026-11-04',
-            'https://images.unsplash.com/photo-1502904550040-7534597429ae?auto=format&fit=crop&w=800&q=80'
-        ],
-        [
-            'Taihu Lake Eco Scenic Run',
-            4,
-            'Huzhou (Taihu Lake)',
-            '2026-11-19',
-            'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80'
-        ],
-        [
-            'Jiaxing South Lake Heritage Dash',
-            1,
-            'Jiaxing (South Lake)',
-            '2026-11-30',
-            'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80'
-        ],
-        [
-            'Oujiang River Midnight Challenge',
-            3,
-            'Wenzhou (Oujiang)',
-            '2026-12-09',
-            'https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=800&q=80'
-        ]
-    ];
+    stmtEvent.run(
+        'Moganshan Forest Trail Charity Run',
+        4,
+        'Huzhou, Deqing Moganshan',
+        '2026-11-18',
+        'An invigorating trail run amidst bamboo forests in Huzhou, boosting environmental conservation and rural medical relief.',
+        'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=800&q=80',
+        'Zhejiang Outdoor Sports Union'
+    );
 
-    initialEvents.forEach(evt => {
-        insertEvent.run(evt[0], evt[1], evt[2], evt[3], evt[4]);
-    });
+    stmtEvent.run(
+        'Jiaxing South Lake Health Walk & Run',
+        5,
+        'Jiaxing, South Lake District',
+        '2026-12-01',
+        'A community health walk and run designed for residents of all ages to promote wellness and raise funds for elderly care services.',
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+        'Jiaxing Civic Welfare Council'
+    );
 
-    insertEvent.finalize(() => {
-        console.log('Database successfully initialized with registrations table and event seeds.');
-        db.close();
-    });
+    stmtEvent.run(
+        'Wenzhou Oujiang Riverfront Night Run',
+        2,
+        'Wenzhou, Oujiang Park',
+        '2026-12-12',
+        'A vibrant waterfront night run along the Oujiang River, raising public awareness for urban youth mental health and wellness.',
+        'https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=800&q=80',
+        'Wenzhou Youth Development Charity'
+    );
+
+    stmtEvent.finalize();
+
+    console.log('Database initialized with full event set and original Chinese runner images!');
 });
+
+db.close();
