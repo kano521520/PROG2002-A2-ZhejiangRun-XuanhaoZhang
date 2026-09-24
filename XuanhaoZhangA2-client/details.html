@@ -2,17 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Event Details - Zhejiang Hope Run</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details - Zhejiang Community Charity Events</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Zhejiang Hope Run Charity Platform</h1>
-    <a href="index.html">Home</a>
+    <header class="header">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">🏃 Zhejiang Community Charity Events</a></h1>
+    </header>
 
-    <!-- Container ID must match event-detail-container -->
-    <div id="event-detail-container">
-        <p>Loading event details...</p>
-    </div>
+    <main class="container">
+        <a href="index.html" class="back-link">&larr; Back to Events List</a>
+        
+        <!-- Event Detail Card Container -->
+        <div id="event-detail-container" class="detail-card">
+            <p>Loading event details...</p>
+        </div>
+
+        <!-- Registration Form Section -->
+        <section class="registration-section">
+            <h2>Join This Charity Event</h2>
+            <form id="registration-form">
+                <input type="hidden" id="event-id" name="event_id" />
+
+                <div class="form-group">
+                    <label for="full-name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="full-name" name="full_name" required placeholder="e.g., Xuanhao Zhang">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="e.g., student@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="e.g., +86 13800000000">
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Number of Participants <span class="required">*</span></label>
+                    <input type="number" id="quantity" name="quantity" min="1" max="10" value="1" required>
+                </div>
+
+                <button type="submit" id="btn-submit" class="btn-submit">Register Now</button>
+            </form>
+            <div id="form-response" class="form-response-msg"></div>
+        </section>
+    </main>
 
     <script src="details.js"></script>
 </body>

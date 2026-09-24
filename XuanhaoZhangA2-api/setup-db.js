@@ -1,7 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Resolve absolute path to charity_events.db file
 const dbPath = path.resolve(__dirname, '../db/charity_events.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -34,11 +33,25 @@ db.serialize(() => {
         )
     `);
 
-    // 3. Clear existing table rows to ensure fresh seed data
+    // 3. Create registrations table for event bookings
+    db.run(`
+        CREATE TABLE IF NOT EXISTS registrations (
+            registration_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_id INTEGER NOT NULL,
+            full_name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT,
+            quantity INTEGER NOT NULL DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (event_id) REFERENCES events(event_id)
+        )
+    `);
+
+    // Reset tables for clean initialization
     db.run('DELETE FROM categories');
     db.run('DELETE FROM events');
 
-    // 4. Populate categories table
+    // Seed categories
     const insertCategory = db.prepare('INSERT INTO categories (category_id, category_name) VALUES (?, ?)');
     insertCategory.run(1, 'Family & Kids Run');
     insertCategory.run(2, '10K & Challenge Run');
@@ -46,7 +59,7 @@ db.serialize(() => {
     insertCategory.run(4, 'Trail & Park Run');
     insertCategory.finalize();
 
-    // 5. Populate events table with 100% verified Asian/Chinese runner photos
+    // Seed initial events with verified high-res Asian runner photos
     const insertEvent = db.prepare(`
         INSERT INTO events (title, category_id, location, date, image_url)
         VALUES (?, ?, ?, ?, ?)
@@ -58,42 +71,42 @@ db.serialize(() => {
             1,
             'Hangzhou (West Lake)',
             '2026-10-14',
-            'https://images.unsplash.com/photo-1594882645126-14020914d58d?auto=format&fit=crop&w=800&q=80' // 亚裔跑者户外晨跑
+            'https://images.unsplash.com/photo-1594882645126-14020914d58d?auto=format&fit=crop&w=800&q=80'
         ],
         [
             'Dongqian Lake Sunset 10K Run',
             2,
             'Ningbo (Dongqian Lake)',
             '2026-10-27',
-            'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80' // 亚裔运动选手湖边跑步/热身
+            'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80'
         ],
         [
             'Shaoxing Ancient Town Night Glow Run',
             3,
             'Shaoxing (Yuecheng)',
             '2026-11-04',
-            'https://images.unsplash.com/photo-1502904550040-7534597429ae?auto=format&fit=crop&w=800&q=80' // 夜间城市跑者与发光投影
+            'https://images.unsplash.com/photo-1502904550040-7534597429ae?auto=format&fit=crop&w=800&q=80'
         ],
         [
             'Taihu Lake Eco Scenic Run',
             4,
             'Huzhou (Taihu Lake)',
             '2026-11-19',
-            'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80' // 亚裔男选手公园绿道户外奔跑
+            'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80'
         ],
         [
             'Jiaxing South Lake Heritage Dash',
             1,
             'Jiaxing (South Lake)',
             '2026-11-30',
-            'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80' // 亚裔青年户外慢跑健身
+            'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80'
         ],
         [
             'Oujiang River Midnight Challenge',
             3,
             'Wenzhou (Oujiang)',
             '2026-12-09',
-            'https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=800&q=80' // 城市马拉松/夜跑选手
+            'https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=800&q=80'
         ]
     ];
 
@@ -102,7 +115,7 @@ db.serialize(() => {
     });
 
     insertEvent.finalize(() => {
-        console.log('Database successfully re-seeded with verified Asian runner photos!');
+        console.log('Database successfully initialized with registrations table and event seeds.');
         db.close();
     });
 });

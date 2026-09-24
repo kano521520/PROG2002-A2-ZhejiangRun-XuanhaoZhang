@@ -1,53 +1,106 @@
-const API_BASE_URL = 'http://localhost:3000/api';
-const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=800&q=80';
-
 document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get('id');
+    const API_BASE_URL = 'http://localhost:3000/api';
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('id');
 
-    const container = document.getElementById('event-detail-container');
-    if (!container) {
-        console.error('Error: Container element #event-detail-container not found.');
-        return;
-    }
+    const detailContainer = document.getElementById('event-detail-container');
+    const eventIdInput = document.getElementById('event-id');
+    const regForm = document.getElementById('registration-form');
+    const responseMsg = document.getElementById('form-response');
 
     if (!eventId) {
-        container.innerHTML = '<p style="color: red; font-size: 1.2em;">Error: Missing event ID parameter in URL. Please return to Home page and click "View Details".</p>';
+        detailContainer.innerHTML = '<p class="error-msg">No event ID provided. Please return to the homepage.</p>';
+        if (regForm) regForm.style.display = 'none';
         return;
     }
 
-    fetchEventDetails(eventId, container);
-});
-
-function resolveEventImage(dbImageUrl) {
-    if (dbImageUrl && typeof dbImageUrl === 'string' && dbImageUrl.trim().startsWith('http')) {
-        return dbImageUrl.trim();
+    if (eventIdInput) {
+        eventIdInput.value = eventId;
     }
-    return DEFAULT_FALLBACK_IMAGE;
-}
 
-function fetchEventDetails(id, container) {
-    fetch(`${API_BASE_URL}/events/${id}`)
-        .then(res => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load event.`);
-            return res.json();
+    // Fetch single event details
+    fetch(`${API_BASE_URL}/events/${eventId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Event not found or server error.');
+            }
+            return response.json();
         })
         .then(event => {
-            const eventImg = resolveEventImage(event.image_url);
-            const formattedDate = event.date ? event.date.split('T')[0] : 'TBD';
-
-            container.innerHTML = `
-                <div class="detail-card" style="max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <img src="${eventImg}" alt="${event.title}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px;" />
-                    <h1 style="margin-top: 20px; color: #333;">${event.title}</h1>
-                    <p style="font-size: 1.1em; color: #555;">🏷️ <strong>Category:</strong> ${event.category_name}</p>
-                    <p style="font-size: 1.1em; color: #555;">📍 <strong>Location:</strong> ${event.location}</p>
-                    <p style="font-size: 1.1em; color: #555;">📅 <strong>Date:</strong> ${formattedDate}</p>
+            detailContainer.innerHTML = `
+                <img src="${event.image_url}" alt="${event.title}" class="detail-image" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=800&q=80';" />
+                <div class="detail-content">
+                    <span class="badge">${event.category_name || 'Charity Run'}</span>
+                    <h2>${event.title}</h2>
+                    <p><strong>📍 Location:</strong> ${event.location}</p>
+                    <p><strong>📅 Date:</strong> ${event.date}</p>
+                    <p class="description">Join us for the ${event.title} in ${event.location}! All registration fees and funds raised will go directly towards local community charity projects in Zhejiang Province.</p>
                 </div>
             `;
         })
         .catch(err => {
             console.error('Error fetching event details:', err);
-            container.innerHTML = `<p style="color: red; font-size: 1.2em;">Failed to load event details. Please verify that node server is running on http://localhost:3000.</p>`;
+            detailContainer.innerHTML = `<p class="error-msg">Failed to load event details: ${err.message}</p>`;
+            if (regForm) regForm.style.display = 'none';
         });
-}
+
+    // Handle registration form submission
+    if (regForm) {
+        regForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const fullName = document.getElementById('full-name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const quantity = parseInt(document.getElementById('quantity').value, 10);
+
+            if (!fullName || !email) {
+                showResponse('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            const payload = {
+                event_id: parseInt(eventId, 10),
+                full_name: fullName,
+                email: email,
+                phone: phone,
+                quantity: quantity
+            };
+
+            const submitBtn = document.getElementById('btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            fetch(`${API_BASE_URL}/registrations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(result => {
+                if (result.status === 201) {
+                    showResponse(`✅ ${result.body.message} Registration ID: #${result.body.registration_id}`, 'success');
+                    regForm.reset();
+                    if (eventIdInput) eventIdInput.value = eventId;
+                } else {
+                    showResponse(`❌ ${result.body.error || 'Registration failed.'}`, 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Registration API error:', err);
+                showResponse('❌ Unable to connect to the server. Please ensure backend is running.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register Now';
+            });
+        });
+    }
+
+    function showResponse(msg, type) {
+        responseMsg.textContent = msg;
+        responseMsg.className = `form-response-msg ${type}`;
+    }
+});
